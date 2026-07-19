@@ -1,6 +1,6 @@
 // components/Crystals.tsx
 'use client';
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { MeshTransmissionMaterial } from '@react-three/drei';
 import * as THREE from 'three';
@@ -20,7 +20,6 @@ function Crystal({
     if (!ref.current) return;
     ref.current.rotation.y += delta * speed;
     ref.current.rotation.x += delta * speed * 0.35;
-    // subtle float
     ref.current.position.y =
       position[1] + Math.sin(state.clock.elapsedTime * 0.4) * 0.15;
   });
@@ -47,12 +46,16 @@ function Crystal({
 function Particles() {
   const ref = useRef<THREE.Points>(null);
   const count = 240;
-  const positions = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 22;
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 14;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
-  }
+
+  const positions = useMemo(() => {
+    const arr = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      arr[i * 3] = (Math.random() - 0.5) * 22;
+      arr[i * 3 + 1] = (Math.random() - 0.5) * 14;
+      arr[i * 3 + 2] = (Math.random() - 0.5) * 10;
+    }
+    return arr;
+  }, []);
 
   useFrame((state) => {
     if (ref.current) {
@@ -63,12 +66,7 @@ function Particles() {
   return (
     <points ref={ref}>
       <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={count}
-          array={positions}
-          itemSize={3}
-        />
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
         size={0.018}
