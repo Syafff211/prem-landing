@@ -2,7 +2,6 @@
 'use client';
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { MeshTransmissionMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
 function Crystal({
@@ -21,23 +20,20 @@ function Crystal({
     ref.current.rotation.y += delta * speed;
     ref.current.rotation.x += delta * speed * 0.35;
     ref.current.position.y =
-      position[1] + Math.sin(state.clock.elapsedTime * 0.4) * 0.15;
+      position[1] + Math.sin(state.clock.elapsedTime * 0.4) * 0.12;
   });
 
   return (
     <mesh ref={ref} position={position} scale={scale}>
       <octahedronGeometry args={[1, 0]} />
-      <MeshTransmissionMaterial
-        transmission={0.2}
-        thickness={2}
-        roughness={0.25}
-        ior={1.4}
-        chromaticAberration={0.02}
-        color="#0a0a0a"
-        attenuationColor="#1a1712"
-        attenuationDistance={2}
-        metalness={0.4}
-        clearcoat={1}
+      {/* Material ringan tapi tetap premium */}
+      <meshStandardMaterial
+        color="#0c0c0c"
+        metalness={0.9}
+        roughness={0.15}
+        emissive="#1a1712"
+        emissiveIntensity={0.15}
+        flatShading
       />
     </mesh>
   );
@@ -45,7 +41,7 @@ function Crystal({
 
 function Particles() {
   const ref = useRef<THREE.Points>(null);
-  const count = 240;
+  const count = 120; // dikurangi dari 240
 
   const positions = useMemo(() => {
     const arr = new Float32Array(count * 3);
@@ -58,9 +54,7 @@ function Particles() {
   }, []);
 
   useFrame((state) => {
-    if (ref.current) {
-      ref.current.rotation.y = state.clock.elapsedTime * 0.02;
-    }
+    if (ref.current) ref.current.rotation.y = state.clock.elapsedTime * 0.02;
   });
 
   return (
@@ -69,7 +63,7 @@ function Particles() {
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        size={0.018}
+        size={0.02}
         color="#D8C6A4"
         transparent
         opacity={0.5}
@@ -82,10 +76,9 @@ function Particles() {
 export default function Crystals() {
   return (
     <>
-      <ambientLight intensity={0.15} />
-      <directionalLight position={[5, 8, 5]} intensity={1.2} color="#F4F0E8" />
-      <directionalLight position={[-6, -2, -4]} intensity={0.4} color="#D8C6A4" />
-      <spotLight position={[0, 6, 6]} intensity={2} angle={0.5} penumbra={1} color="#fff" />
+      <ambientLight intensity={0.25} />
+      <directionalLight position={[5, 8, 5]} intensity={1.5} color="#F4F0E8" />
+      <directionalLight position={[-6, -2, -4]} intensity={0.5} color="#D8C6A4" />
 
       <Crystal position={[4.2, 0.5, -1]} scale={2.6} speed={0.12} />
       <Crystal position={[-4.8, -0.8, -2]} scale={1.9} speed={0.09} />
