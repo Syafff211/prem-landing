@@ -1,70 +1,301 @@
 // components/Hero.tsx
-'use client';
-import { motion } from 'framer-motion';
-import { fadeUp, staggerChar } from '@/lib/motion';
+"use client";
 
-const title = ['ZYNEX', 'STUDIO'];
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
+import MobileMenu from "./MobileMenu";
+import SearchOverlay from "./SearchOverlay";
+
+const CrystalScene = dynamic(() => import("./CrystalScene"), {
+  ssr: false,
+  loading: () => null,
+});
+
+const navLinks = ["HOME", "SERVICES", "PRICING", "PORTFOLIO", "CONTACT"];
+
+const features = [
+  {
+    number: "01",
+    title: "MODERN DESIGN",
+    description: "Premium UI crafted for startups.",
+  },
+  {
+    number: "02",
+    title: "FAST DELIVERY",
+    description: "Finished within 24–72 hours.",
+  },
+  {
+    number: "03",
+    title: "HIGH PERFORMANCE",
+    description: "Optimized speed & SEO.",
+  },
+  {
+    number: "04",
+    title: "FULL SUPPORT",
+    description: "Lifetime consultation.",
+  },
+];
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 28 },
+  show: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.9,
+      delay: 0.08 * i,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  }),
+};
+
+const slideDown = {
+  hidden: { opacity: 0, y: -24 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.85,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+};
+
+const titleReveal = {
+  hidden: { y: "110%" },
+  show: (i: number) => ({
+    y: "0%",
+    transition: {
+      duration: 1.05,
+      delay: 0.35 + i * 0.08,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  }),
+};
 
 export default function Hero() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const onMove = (event: PointerEvent) => {
+      document.documentElement.style.setProperty(
+        "--cursor-x",
+        `${event.clientX}px`
+      );
+      document.documentElement.style.setProperty(
+        "--cursor-y",
+        `${event.clientY}px`
+      );
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => window.removeEventListener("pointermove", onMove);
+  }, []);
+
+  useEffect(() => {
+    document.body.classList.toggle("menu-open", menuOpen);
+    document.body.classList.toggle("search-open", searchOpen);
+
+    return () => {
+      document.body.classList.remove("menu-open", "search-open");
+    };
+  }, [menuOpen, searchOpen]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        setSearchOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   return (
-    <section className="relative z-20 flex min-h-screen flex-col items-center justify-center px-6 text-center">
-      {/* Label */}
-      <motion.p
-        variants={fadeUp}
+    <main className="hero-shell">
+      {/* WebGL Background */}
+      <div className="webgl-layer" aria-hidden="true">
+        {mounted && <CrystalScene />}
+      </div>
+
+      {/* Atmosphere Layers */}
+      <div className="ambient-glow" aria-hidden="true" />
+      <div className="cursor-glow" aria-hidden="true" />
+      <div className="vignette" aria-hidden="true" />
+      <div className="noise" aria-hidden="true" />
+
+      {/* Header */}
+      <motion.header
+        className="site-header"
+        variants={slideDown}
         initial="hidden"
         animate="show"
-        custom={1}
-        className="mb-8 text-[11px] tracking-luxe text-accent"
       >
-        DIGITAL CREATIVE AGENCY
-      </motion.p>
-
-      {/* Title with stagger */}
-      <h1 className="font-display font-bold leading-[0.9] tracking-tight">
-        {title.map((word, wi) => (
-          <span key={word} className="block overflow-hidden">
-            <span className="flex justify-center">
-              {word.split('').map((ch, ci) => (
-                <motion.span
-                  key={ci}
-                  variants={staggerChar}
-                  initial="hidden"
-                  animate="show"
-                  custom={wi * 5 + ci}
-                  className="inline-block text-[19vw] leading-[0.85] md:text-[13vw] lg:text-[11rem]"
-                >
-                  {ch}
-                </motion.span>
-              ))}
-            </span>
+        <Link href="/" className="brand" aria-label="Zynex Studio home">
+          <span className="brand-mark" aria-hidden="true">
+            <span />
+            <span />
           </span>
+          ZYNEX STUDIO
+        </Link>
+
+        <nav className="desktop-navigation" aria-label="Primary">
+          {navLinks.map((link) => (
+            <a key={link} href={`#${link.toLowerCase()}`}>
+              {link}
+            </a>
+          ))}
+        </nav>
+
+        <div className="header-actions">
+          <Link href="/login" className="login-button">
+            LOGIN
+          </Link>
+
+          <button
+            className="icon-button search-button"
+            aria-label="Search"
+            onClick={() => setSearchOpen(true)}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="6.5" />
+              <path d="m16 16 4 4" />
+            </svg>
+          </button>
+
+          <button
+            className="menu-button"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen(true)}
+          >
+            <span />
+            <span />
+          </button>
+        </div>
+      </motion.header>
+
+      {/* Hero Content */}
+      <section className="hero-content">
+        <motion.p
+          className="eyebrow"
+          variants={fadeUp}
+          initial="hidden"
+          animate="show"
+          custom={1}
+        >
+          <span aria-hidden="true" />
+          DIGITAL CREATIVE AGENCY
+          <span aria-hidden="true" />
+        </motion.p>
+
+        <h1 className="hero-title">
+          {["ZYNEX", "STUDIO"].map((word, wordIndex) => (
+            <span className="title-mask" key={word}>
+              <motion.span
+                variants={titleReveal}
+                initial="hidden"
+                animate="show"
+                custom={wordIndex}
+              >
+                {word}
+              </motion.span>
+            </span>
+          ))}
+        </h1>
+
+        <div className="hero-supporting-copy">
+          <motion.p
+            className="hero-subtitle"
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            custom={8}
+          >
+            Modern Website <span aria-hidden="true">•</span> Branding{" "}
+            <span aria-hidden="true">•</span> Automation Solutions
+          </motion.p>
+
+          <motion.p
+            className="hero-description"
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            custom={9}
+          >
+            Building premium websites, modern business platforms,
+            high-converting landing pages, and digital experiences for
+            startups, creators, and growing businesses.
+          </motion.p>
+        </div>
+      </section>
+
+      {/* Feature Bar */}
+      <section className="feature-bar" aria-label="Studio highlights">
+        {features.map((feature, index) => (
+          <motion.article
+            className="feature-item"
+            key={feature.number}
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            custom={11 + index}
+          >
+            <span className="feature-number">{feature.number}</span>
+            <div>
+              <h2>{feature.title}</h2>
+              <p>{feature.description}</p>
+            </div>
+          </motion.article>
         ))}
-      </h1>
+      </section>
 
-      {/* Subtitle */}
-      <motion.p
+      {/* Bottom Rail */}
+      <motion.div
+        className="bottom-rail"
         variants={fadeUp}
         initial="hidden"
         animate="show"
-        custom={9}
-        className="mt-8 text-sm tracking-wide2 text-ivory/90 md:text-base"
+        custom={16}
       >
-        Modern Website <span className="text-accent">•</span> Branding{' '}
-        <span className="text-accent">•</span> Automation Solutions
-      </motion.p>
+        <div className="project-count">
+          <span className="status-dot" aria-hidden="true" />
+          50+ COMPLETED PROJECTS
+        </div>
 
-      {/* Description */}
-      <motion.p
-        variants={fadeUp}
-        initial="hidden"
-        animate="show"
-        custom={10}
-        className="mt-6 max-w-xl text-sm leading-relaxed text-white/55"
-      >
-        Building premium websites, modern business platforms, high-converting
-        landing pages, and digital experiences for startups, creators, and
-        growing businesses.
-      </motion.p>
-    </section>
+        <a href="#services" className="scroll-indicator">
+          SCROLL
+          <span className="scroll-line" aria-hidden="true">
+            <span />
+          </span>
+        </a>
+
+        <div className="slider-indicator" aria-hidden="true">
+          <span className="active" />
+          <span />
+          <span />
+        </div>
+      </motion.div>
+
+      {/* Overlays */}
+      <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+    </main>
   );
 }
