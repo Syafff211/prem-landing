@@ -1,9 +1,14 @@
 // components/SmoothScroll.tsx
 'use client';
-import { useEffect } from 'react';
-import Lenis from '@studio-freight/lenis';
 
-export default function SmoothScroll({ children }: { children: React.ReactNode }) {
+import { useEffect } from 'react';
+import Lenis from 'lenis';
+
+export default function SmoothScroll({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -12,10 +17,12 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     });
 
     let rafId: number;
+
     const raf = (time: number) => {
       lenis.raf(time);
       rafId = requestAnimationFrame(raf);
     };
+
     rafId = requestAnimationFrame(raf);
 
     return () => {
